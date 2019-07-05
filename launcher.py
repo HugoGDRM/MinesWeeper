@@ -1,84 +1,110 @@
+# Clean the console
 import os 
+# Get keyboard input
 import getch
+# Get the timer
+import time
+
+# Other Class
 from minefield import *
 from cell import *
 from player import *
 
-"""
-    Get an input from the player.
- 
-""" 
-def getInput(msg):
-    try:
-        return getch.getch()
+os.system('clear')
 
-    except SyntaxError:
-    	pass
-
-"""
-    Check if the player win. 
-    If the n mines are flagged.
- 
-""" 
-def checkWin(table, n):
-    c = 0
-    for i in range(len(table)):
-        for y in range(len(table[0])):
-            if table[i][y].mine and table[i][y].flag:
-                c += 1
-    return c == n
-
-
-
-
+# Create a player
 player = Player()
-board = MineField(9,9,player)
-board.Fill(10)
-board.CountNeighbor()
 
-while(not player.dead and not player.win):
+# Ask the difficulty
+print("Dificulty : EASY = 'e'")
+print("            MEDIUM = 'm'")
+print("            HARD = 'h'")
+
+input1 = getch.getch()
+dificulty = Dificulty(input1)
+
+# Creat a MineField
+board = generateBoard(dificulty.key, player)
+
+# Get the start time
+startTime = time.time()
+endTime = 0
+
+# While the player isn't diying and he don't win
+while not player.dead and not player.win:
 
     os.system('clear')
 
+    table = board.table
+    
+    # Manual
     board.Print()
-
-    i = str(getch.getch())
-
+    print()
+    print("Moves = Z, Q, S, D")
+    print("Dig = c                       " + str(dificulty.mines - player.checkScore(table)) + " mines remaining" )  
+    print("FLAG = f                      " + str(round(time.time() - startTime)) + " secondes ")  
+    
+    # Get the action input
+    input2 = str(getch.getch())
+ 
     # Dig
-    if(i == "c"):
-        board.table[player.cursorX][player.cursorY].show = True
+    if input2 == 'c':
+        table[player.cursorX][player.cursorY].show = True
         # Check if there is a bomb here
-        if(board.table[player.cursorX][player.cursorY].mine):
+        if table[player.cursorX][player.cursorY].mine:
             player.dead = True
-    # Flaf
-    elif(i == "f"):
-        board.table[player.cursorX][player.cursorY].flag = True
+        # Check if there is no neighbors
+        if table[player.cursorX][player.cursorY].value == 0:
+            board.Clear(player.cursorX,player.cursorY)
+    # Flag
+    elif input2 == 'f':
+        table[player.cursorX][player.cursorY].flag = True
     # Left
-    elif(i == "q"):
-        if(board.CheckCoord(player.cursorX, player.cursorY-1)):
+    elif input2 == 'q':
+        if board.CheckCoord(player.cursorX, player.cursorY-1):
             player.cursorY -= 1
     # Right
-    elif(i == "d"):
-        if(board.CheckCoord(player.cursorX, player.cursorY+1)):
+    elif input2 == 'd':
+        if board.CheckCoord(player.cursorX, player.cursorY+1):
             player.cursorY += 1
     # Up
-    elif(i == "z"):
-        if(board.CheckCoord(player.cursorX-1, player.cursorY)):
+    elif input2 == 'z':
+        if board.CheckCoord(player.cursorX-1, player.cursorY):
             player.cursorX -= 1  
     # Down
-    elif(i == "s"):
-        if(board.CheckCoord(player.cursorX+1, player.cursorY)):
+    elif input2 == 's':
+        if board.CheckCoord(player.cursorX+1, player.cursorY):
             player.cursorX += 1  
     
-    # Check the win
-    if checkWin(board.table,10):
-        player.win = True
+    # Check the win for each dificulty
+    if dificulty.key == 'e':
+        if player.checkScore(board.table) == 10:
+            player.win = True
 
-if(player.dead):
+    if dificulty.key == 'm':
+        if player.checkScore(board.table) == 40:
+            player.win = True
+
+    if dificulty.key == 'h':
+        if player.checkScore(board.table) == 99:
+            player.win = True
+
+# Set the time score
+endTime = round(time.time() - startTime)
+
+# LOOSE
+if player.dead:
     os.system('clear')
+    print()
     print("YOU LOOSE")
-if(player.win):
+    print(str(endTime) + " secondes ")
+    print()
+# WIN
+if player.win:
     os.system('clear')
+    print()
     print("YOU WIN")
+    print(str(endTime) + " secondes ")
+    print()
 
 

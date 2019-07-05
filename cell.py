@@ -15,9 +15,11 @@ class Cell(object):
  
         """
         if self.show:
+            if self.value == 0:
+                return " "
             return str(self.value)
         elif self.flag:
-            return 'F'
+            return '!'
         else:
             return '.'
 
