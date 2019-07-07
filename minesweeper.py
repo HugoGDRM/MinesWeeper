@@ -1,28 +1,94 @@
+# Clean the console
+import os 
+# Get keyboard input
+import getch
+# Get the timer
+import time
+# Get randoms
 import random as rnd
-from cell import *
-from player import *
 
-class Dificulty:
+"""
+Class how represent a cell of the minefield.
+
+"""
+class Cell(object):
+
+    def __init__(self):
+        self.mine = False  # There is a mine here ?
+        self.flag = False  # There is a flag here ?
+        self.show = False  # This cell is visible ?
+        self.value = 0     # The number of neighbor(s) around it 
+
+
     """
-    Class how represent the dificulty of the board.
- 
+    Return a symbol that represent the state of this cell.
+
     """
+    def __str__(self):
+        
+        # Is she show
+        if self.show:
+            # An empty cell with no neighbors is a 'space'
+            if self.value == 0:
+                return " "
+            # Else if the cell has cell around it, this is the number of neighbors : (1 <= 'int' <= 8)
+            else:
+                return str(self.value)
+        # She is hide
+        elif self.flag:
+            return '!'
+        else:
+            # A simple hide cell
+            return '.'
+
+"""
+Class how represent the player.
+
+"""
+class Player(object):
+
+    def __init__(self):
+
+        self.win = False  # The player win the game ?
+        self.dead = False  # Is he dead ?
+        self.cursorX = 0  # Vertical Cursor Coord
+        self.cursorY = 0  # Horizontal Cursor Coord
+        
+    """
+    Check the number of flagged mines.
+
+    """
+    def checkScore(self, table):
+        c = 0
+        for i in range(len(table)):
+            for y in range(len(table[0])):
+                if table[i][y].mine and table[i][y].flag:
+                    c += 1
+        return c
+
+"""
+Class how represent the dificulty of the board.
+
+"""
+class Dificulty(object):
+
     def __init__(self, input_key):
 
         if input_key == 'e':
             self.mines = 10
         if input_key == 'm':
-            self.mines = 40
+            self.mines = 30
         if input_key == 'h':
-            self.mines = 99
+            self.mines = 70
 
         self.key = input_key
 
+"""
+Class how represent the minefield.
+
+"""
 class MineField(object):
-    """
-    Class how represent the minefield.
- 
-    """
+
     def __init__(self, width, height, player):
 
         table = []
@@ -37,12 +103,11 @@ class MineField(object):
                 line.append(Cell())
         
         self.table = table
-        self.width = width
-        self.height = height
         self.player = player
 
     """
     Check if X and Y coordinates are inside the table.
+
     """
     def CheckCoord(self, x, y):
         return x >= 0 and x < len(self.table) and y >= 0 and y < len(self.table[0])
@@ -50,14 +115,15 @@ class MineField(object):
 
     """
     Fill the board with n bombs.
- 
+
     """
     def Fill(self, n):
 
         while n > 0:
 
-            rndHeight = rnd.randint(0, self.height - 1)
-            rndWidth = rnd.randint(0, self.width - 1)
+            # Create 2 random numbers
+            rndHeight = rnd.randint(0, len(self.table) - 1)
+            rndWidth = rnd.randint(0, len(self.table[0]) - 1)
 
             cell = self.table[rndHeight][rndWidth]
 
@@ -73,9 +139,9 @@ class MineField(object):
     """     
     def CountNeighbor(self):
 
-        for i in range(self.height):
+        for i in range(len(self.table)):
 
-            for y in range(self.width):
+            for y in range(len(self.table[0])):
 
                 n = 0
                 
@@ -143,9 +209,9 @@ class MineField(object):
     """ 
     def Print(self):
 
-        for i in range(self.height):
+        for i in range(len(self.table)):
 
-            for y in range(self.width):
+            for y in range(len(self.table[0])):
 
                 print(self.table[i][y].__str__() , end = "")
 
@@ -162,7 +228,6 @@ class MineField(object):
     y = Horizontal Coord
     meet = Boolean on True if we meet a cell with a value != than zero (ending condition) (on false at the begining)
 
- 
     """ 
     def Clear(self, i, y, meet):
 
@@ -196,11 +261,8 @@ class MineField(object):
             else:
 
                 # Show it
-                self.table[i][y].show = True
+                self.table[i][y].show = True       
 
-
-
-        
 
 """
 Generate a board
@@ -226,4 +288,105 @@ def generateBoard(dificulty, player):
         board.Fill(99)
         board.CountNeighbor()
         return board
+os.system('clear')
+
+# Create a player
+player = Player()
+
+# Ask the difficulty
+print("Dificulty : EASY = 'e'")
+print("            MEDIUM = 'm'")
+print("            HARD = 'h'")
+
+input1 = getch.getch()
+dificulty = Dificulty(input1)
+
+# Creat a MineField
+board = generateBoard(dificulty.key, player)
+
+# Get the start time
+startTime = time.time()
+endTime = 0
+
+# While the player isn't diying and he don't win
+while not player.dead and not player.win:
+
+    os.system('clear')
+
+    table = board.table
+    
+    # Manual
+    board.Print()
+    print()
+    print("Moves = Z, Q, S, D")
+    print("Dig = c                       " + str(dificulty.mines - player.checkScore(table)) + " mines remaining" )  
+    print("FLAG = f                      " + str(round(time.time() - startTime)) + " secondes ")  
+    
+    # Get the action input
+    input2 = str(getch.getch())
+ 
+    # Dig
+    if input2 == 'c':
+        # Check if there is no neighbors
+        if table[player.cursorX][player.cursorY].value == 0:
+            # Clear
+            board.Clear(player.cursorX,player.cursorY, False)
+        else:
+            # Show it normally
+            table[player.cursorX][player.cursorY].show = True
+
+        # Check if there is a bomb here
+        if table[player.cursorX][player.cursorY].mine:
+            player.dead = True
+    # Flag
+    elif input2 == 'f':
+        table[player.cursorX][player.cursorY].flag = True
+    # Left
+    elif input2 == 'q':
+        if board.CheckCoord(player.cursorX, player.cursorY-1):
+            player.cursorY -= 1
+    # Right
+    elif input2 == 'd':
+        if board.CheckCoord(player.cursorX, player.cursorY+1):
+            player.cursorY += 1
+    # Up
+    elif input2 == 'z':
+        if board.CheckCoord(player.cursorX-1, player.cursorY):
+            player.cursorX -= 1  
+    # Down
+    elif input2 == 's':
+        if board.CheckCoord(player.cursorX+1, player.cursorY):
+            player.cursorX += 1  
+    
+    # Check the win for each dificulty
+    if dificulty.key == 'e':
+        if player.checkScore(board.table) == 10:
+            player.win = True
+
+    if dificulty.key == 'm':
+        if player.checkScore(board.table) == 40:
+            player.win = True
+
+    if dificulty.key == 'h':
+        if player.checkScore(board.table) == 99:
+            player.win = True
+
+# Set the time score
+endTime = round(time.time() - startTime)
+
+# LOOSE
+if player.dead:
+    os.system('clear')
+    print()
+    print("YOU LOOSE")
+    print(str(endTime) + " secondes ")
+    print()
+# WIN
+if player.win:
+    os.system('clear')
+    print()
+    print("YOU WIN")
+    print(str(endTime) + " secondes ")
+    print()
+
 
