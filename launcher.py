@@ -49,13 +49,17 @@ while not player.dead and not player.win:
  
     # Dig
     if input2 == 'c':
-        table[player.cursorX][player.cursorY].show = True
+        # Check if there is no neighbors
+        if table[player.cursorX][player.cursorY].value == 0:
+            # Clear
+            board.Clear(player.cursorX,player.cursorY, False)
+        else:
+            # Show it normally
+            table[player.cursorX][player.cursorY].show = True
+
         # Check if there is a bomb here
         if table[player.cursorX][player.cursorY].mine:
             player.dead = True
-        # Check if there is no neighbors
-        if table[player.cursorX][player.cursorY].value == 0:
-            board.Clear(player.cursorX,player.cursorY)
     # Flag
     elif input2 == 'f':
         table[player.cursorX][player.cursorY].flag = True

@@ -158,59 +158,49 @@ class MineField(object):
 
     """
     Dig all the empty cell around and cell.
+    i = Vertical Coord
+    y = Horizontal Coord
+    meet = Boolean on True if we meet a cell with a value != than zero (ending condition) (on false at the begining)
+
  
     """ 
-    def Clear(self, i, y):
+    def Clear(self, i, y, meet):
 
-        # Check the 8 cells around it, if the cell is empty, make it visible and make a recursive call on it.
+        # Check the 4 cells around it, if the cell is empty, make it visible and make a recursive call on it.
         
-        # North West
-        if self.CheckCoord(i-1, y-1):
-            if self.table[i-1][y-1].value == 0:
-                self.table[i-1][y-1].show = True
-                #self.Clear(i-1,y-1)
+        if not meet and not self.table[i][y].show:
 
-        # North 
-        if self.CheckCoord(i-1, y):
-            if self.table[i-1][y].value == 0:
-                self.table[i-1][y].show = True
-                #self.Clear(i-1,y)
+            # If the cell is empty and has no neighbors, call the function on cells around it and show it
+            if self.table[i][y].value == 0:
 
-        # North Est
-        if self.CheckCoord(i-1, y+1):
-            if self.table[i-1][y+1].value == 0:
-                self.table[i-1][y+1].show = True
-                #self.Clear(i-1,y+1)
+                # Show it
+                self.table[i][y].show = True
 
-        # Est 
-        if self.CheckCoord(i, y+1):
-            if self.table[i][y+1].value == 0:
-                self.table[i][y+1].show = True
-                #self.Clear(i,y+1)
+                # North 
+                if self.CheckCoord(i-1, y):
+                        self.Clear(i-1,y, False)
 
-        # South Est 
-        if self.CheckCoord(i+1, y+1):
-            if self.table[i+1][y+1].value == 0:
-                self.table[i+1][y+1].show = True
-                #self.Clear(i+1,y+1)
+                # Est 
+                if self.CheckCoord(i, y+1):
+                        self.Clear(i,y+1, False)
 
-        # South 
-        if self.CheckCoord(i+1, y):
-            if self.table[i+1][y].value == 0:
-                self.table[i+1][y].show = True
-                #self.Clear(i+1,y)
+                # South 
+                if self.CheckCoord(i+1, y):
+                        self.Clear(i+1,y, False)
 
-        # South West 
-        if self.CheckCoord(i+1, y-1):
-            if self.table[i+1][y-1].value == 0:
-                self.table[i+1][y-1].show = True
-                #self.Clear(i+1,y-1)
+                # West 
+                if self.CheckCoord(i, y-1):
+                        self.Clear(i,y-1, False)
 
-        # West 
-        if self.CheckCoord(i, y-1):
-            if self.table[i][y-1].value == 0:
-                self.table[i][y-1].show = True
-                #self.Clear(i,y-1)
+            # Else if this cell has neighbors, stop the recursion
+            else:
+
+                # Show it
+                self.table[i][y].show = True
+
+
+
+        
 
 """
 Generate a board
